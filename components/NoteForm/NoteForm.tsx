@@ -5,7 +5,7 @@ import { useId } from "react";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
-import { error } from "console";
+import error from "next/error";
 
 interface NoteFormProps {
   onClose: () => void;
@@ -33,7 +33,7 @@ const NoteFormSchema = Yup.object().shape({
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required("tag is required!"),
 });
-export default function NoteForm({ onClose, onSuccess }: NoteFormProps) {
+export default function NoteForm({ onClose }: NoteFormProps) {
   const queryClient = useQueryClient();
   const { mutate } = useMutation({
     mutationFn: createNote,
