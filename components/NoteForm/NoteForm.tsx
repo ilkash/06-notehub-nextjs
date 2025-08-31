@@ -24,7 +24,7 @@ const initialValues: FormValues = {
 const NoteFormSchema = Yup.object().shape({
   title: Yup.string()
     .min(3, "title must be at least 3 characters")
-    .max(50, "tittle is too long")
+    .max(50, "title is too long")
     .required("title is required!"),
   content: Yup.string().max(500, "Content is too long"),
   tag: Yup.string()
@@ -54,11 +54,6 @@ export default function NoteForm({ onClose }: NoteFormProps) {
       onSuccess: () => {
         actions.resetForm();
       },
-    });
-    mutate({
-      title: values.title,
-      content: values.content,
-      tag: values.tag,
     });
   };
 
