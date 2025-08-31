@@ -7,27 +7,28 @@ import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import { fetchNotes } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import { ChangeEvent, useState } from "react";
+import { useDebounce } from "use-debounce";
 import css from "./Notes.client.module.css";
 
 export default function NotesClient({}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchNote, setSearchNote] = useState("");
+  const [updateSearchNote] = useDebounce(searchNote, 300);
   const { data } = useQuery({
-    queryKey: ["note", { page: currentPage, search: searchNote }],
-    queryFn: () => fetchNotes(currentPage, searchNote),
+    queryKey: ["notes", { page: currentPage, search: updateSearchNote }],
+    queryFn: () => fetchNotes(currentPage, updateSearchNote),
     refetchOnMount: false,
   });
 
-  const updateSearchNote = useDebouncedCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchNote(e.target.value);
-      setCurrentPage(1);
-    },
-    300
-  );
+  // const updateSearchNote = useDebouncedCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     setSearchNote(e.target.value);
+  //     setCurrentPage(1);
+  //   },
+  //   300
+  // );
   const openModal = () => setIsModalOpen(true);
 
   const closeModal = () => setIsModalOpen(false);
@@ -39,7 +40,13 @@ export default function NotesClient({}) {
         </Modal>
       )}
       <div className={css.toolbar}>
-        <SearchBox value={searchNote} onChange={updateSearchNote} />
+        <SearchBox
+          value={searchNote}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setSearchNote(e.target.value);
+            setCurrentPage(1);
+          }}
+        />
         {data && data?.totalPages > 1 && (
           <Pagination
             pageCount={data?.totalPages}

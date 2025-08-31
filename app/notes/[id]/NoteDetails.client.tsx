@@ -1,18 +1,19 @@
 "use client";
 import { fetchNoteById } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import css from "./NoteDetails.client.module.css";
-export default function NoteDetailsClient() {
-  const { id } = useParams();
 
+import css from "./NoteDetails.client.module.css";
+interface NoteDetailsClientProps {
+  id: string;
+}
+export default function NoteDetailsClient({ id }: NoteDetailsClientProps) {
   const {
     data: note,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["dateils", { id: id }],
-    queryFn: () => fetchNoteById(id as string),
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
     enabled: !!id,
     refetchOnMount: false,
   });
@@ -22,9 +23,7 @@ export default function NoteDetailsClient() {
   if (error || !note) {
     return <p>Something went wrong.</p>;
   }
-  const formattedDate = note.updatedAt
-    ? `Updated at: ${note.updatedAt}`
-    : `Created at: ${note.createdAt}`;
+  const formattedDate = note.createdAt && `Created at: ${note.createdAt}`;
 
   return (
     <div>

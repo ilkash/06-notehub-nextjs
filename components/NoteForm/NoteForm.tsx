@@ -5,6 +5,7 @@ import { useId } from "react";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
+import { error } from "console";
 
 interface NoteFormProps {
   onClose: () => void;
@@ -22,17 +23,26 @@ const initialValues: FormValues = {
   tag: "Todo",
 };
 // onSubmit={() => {}}
+const NoteFormSchema = Yup.object().shape({
+  title: Yup.string()
+    .min(3, "title must be at least 3 characters")
+    .max(50, "tittle is too long")
+    .required("title is required!"),
+  content: Yup.string().max(500, "Content is too long"),
+  tag: Yup.string()
+    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
+    .required("tag is required!"),
+});
 export default function NoteForm({ onClose, onSuccess }: NoteFormProps) {
   const queryClient = useQueryClient();
   const { mutate } = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["note"] });
-      onSuccess();
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
       onClose();
     },
     onError: () => {
-      console.log("fghtycyd");
+      console.log("Failed to create note:", error);
     },
   });
 
@@ -41,7 +51,6 @@ export default function NoteForm({ onClose, onSuccess }: NoteFormProps) {
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    console.log("Order data:", values);
     actions.resetForm();
     mutate({
       title: values.title,
@@ -50,21 +59,11 @@ export default function NoteForm({ onClose, onSuccess }: NoteFormProps) {
     });
   };
 
-  const OrderFormSchema = Yup.object().shape({
-    title: Yup.string()
-      .min(3, "title must be at least 3 characters")
-      .max(50, "tittle is too long")
-      .required("title is required!"),
-    content: Yup.string().max(500, "too long"),
-    tag: Yup.string()
-      .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
-      .required("tag is required!"),
-  });
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={OrderFormSchema}
+      validationSchema={NoteFormSchema}
     >
       <Form className={css.form}>
         <div className={css.formGroup}>
