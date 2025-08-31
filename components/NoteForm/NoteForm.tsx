@@ -5,11 +5,9 @@ import { useId } from "react";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
-import error from "next/error";
 
 interface NoteFormProps {
   onClose: () => void;
-  onSuccess: () => void;
 }
 interface FormValues {
   title: string;
@@ -39,10 +37,11 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+
       onClose();
     },
-    onError: () => {
-      console.log("Failed to create note:", error);
+    onError: (mutationError: unknown) => {
+      console.log("Failed to create note:", mutationError);
     },
   });
 
@@ -51,7 +50,11 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    actions.resetForm();
+    mutate(values, {
+      onSuccess: () => {
+        actions.resetForm();
+      },
+    });
     mutate({
       title: values.title,
       content: values.content,
